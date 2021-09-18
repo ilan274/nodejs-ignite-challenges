@@ -55,7 +55,6 @@ app.get('/todos', checksExistsUserAccount, (request, response) => {
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
   const { title, deadline } = request.body;
-  const { username } = request.headers;
   const { todos } = request.user;
 
   const todoObj = {
@@ -69,6 +68,53 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
   todos.push(todoObj);
 
   return response.status(201).json(todoObj);
+});
+
+app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
+  const { id } = request.params;
+  const { title, deadline } = request.body;
+  const { todos } = request.user;
+
+  const userTodo = todos.find((todo) => todo.id === id);
+
+  if (!userTodo) {
+    return response.status(404).json({ error: 'To-to not found.' });
+  }
+
+  userTodo.title = title;
+  userTodo.deadline = deadline;
+
+  return response.status(201).json(userTodo);
+});
+
+app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
+  const { id } = request.params;
+  const { todos } = request.user;
+
+  const userTodo = todos.find((todo) => todo.id === id);
+
+  if (!userTodo) {
+    return response.status(404).json({ error: 'To-to not found.' });
+  }
+
+  userTodo.done = true;
+
+  return response.status(201).json(userTodo);
+});
+
+app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
+  const { todos } = request.user;
+  const { id } = request.params;
+
+  const todoExists = todos.some((todo) => todo.id === id);
+
+  if (!todoExists) {
+    return response.status(404).json({ error: 'To-do not found.' });
+  }
+
+  request.user.todos = todos.filter((todo) => todo.id !== id);
+
+  return response.status(204).json()
 });
 
 module.exports = app;
