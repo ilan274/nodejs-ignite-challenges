@@ -47,4 +47,28 @@ app.post('/users', (request, response) => {
   return response.status(201).json(userObj);
 });
 
+app.get('/todos', checksExistsUserAccount, (request, response) => {
+  const { todos } = request.user;
+
+  return response.status(201).json(todos);
+});
+
+app.post('/todos', checksExistsUserAccount, (request, response) => {
+  const { title, deadline } = request.body;
+  const { username } = request.headers;
+  const { todos } = request.user;
+
+  const todoObj = {
+    id: uuidv4(),
+    title,
+    done: false,
+    deadline,
+    created_at: new Date().toLocaleDateString('pt-BR'),
+  };
+
+  todos.push(todoObj);
+
+  return response.status(201).json(todoObj);
+});
+
 module.exports = app;
